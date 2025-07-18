@@ -21,8 +21,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"goapp/internal/log"
-	"goapp/internal/scylla"
+	"gorequest/internal/log"
+	"gorequest/internal/scylla"
 	"math/rand"
 	"flag"
 	"runtime"
