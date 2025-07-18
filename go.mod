@@ -1,6 +1,6 @@
 module gorequest
 
-go 1.18
+go 1.24.4
 
 require (
 	github.com/gocql/gocql v1.17.0
