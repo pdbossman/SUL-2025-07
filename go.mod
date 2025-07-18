@@ -1,6 +1,6 @@
 module goapp
 
-go 1.18
+go 1.22
 
 require (
 	github.com/gocql/gocql v1.17.0
