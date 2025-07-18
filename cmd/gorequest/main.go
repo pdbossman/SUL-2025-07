@@ -248,15 +248,15 @@ func main() {
 			//logger.Info("005- before progress check from insert call")
 			if resultFailed {
 				atomic.AddInt64(&errorCnt, 1)
-				currentErrorCnt = atomic.LoadInt64(&errorCnt)
-				if currentErrorCnt >= *maxErr {
-					currentSuccessCnt = atomic.LoadInt64(&successCnt)
-					currentRowAttempt = atomic.LoadInt64(&rowAttempt)
-					logger.Warn(fmt.Sprintf("Exceeded maxumum errors: %d Attempted %d rows, Success: %d, Failures: %d, Start Time: %s", *maxErr, currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
-
-			}
 			} else {
 				atomic.AddInt64(&successCnt, 1)
+			}
+			// Log progress inside goroutine
+			if currentRowAttempt%*progressInterval == 0 {
+				currentErrorCnt := atomic.LoadInt64(&errorCnt)
+				currentSuccessCnt := atomic.LoadInt64(&successCnt)
+				logger.Info(fmt.Sprintf("Attempted %d rows, Success: %d, Failures: %d, Start Time: %s", 
+					currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
 			}
 		}(i)
 	}
