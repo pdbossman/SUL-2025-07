@@ -306,10 +306,6 @@ func main() {
 	currentErrorCnt = atomic.LoadInt64(&errorCnt)
 	currentSuccessCnt = atomic.LoadInt64(&successCnt)
 	currentRowAttempt = atomic.LoadInt64(&rowAttempt)
-	logger.Info(fmt.Sprintf("WRITES COMPLETED!  Attempted %d rows, Success: %d, Failures: %d, Start Time: %s", currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
-	currentErrorCnt = atomic.LoadInt64(&errorCnt)
-	currentSuccessCnt = atomic.LoadInt64(&successCnt)
-	currentRowAttempt = atomic.LoadInt64(&rowAttempt)
 
 	// Calculate write latencies
 	writeTestResults := calculateWriteLatencies(writeLatencies, currentSuccessCnt, writeTotalLatency, writeMinLatency, writeMaxLatency)
