@@ -413,6 +413,7 @@ type ReadTestResults struct {
     maxLatency   time.Duration
     avgLatency   time.Duration
     p95Latency   time.Duration
+	p99Latency   time.Duration
     latencies    []time.Duration
 }
 
@@ -558,6 +559,7 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
 
     // Calculate percentile latencies
     var p95Latency time.Duration
+	var p99Latency time.Duration
 
     if len(latencies) > 0 {
         // Sort latencies for percentile calculations
@@ -574,6 +576,14 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
         }
     }
 
+    // Calculate p99 latency
+    idx99 := int(float64(len(latencies)) * 0.99)
+    if idx99 < len(latencies) {
+        p99Latency = latencies[idx99]
+    } else {
+        p99Latency = latencies[len(latencies)-1]
+    }
+
     // Prepare and return results
     results := ReadTestResults{
         totalReads:   int(totalReads),
@@ -583,6 +593,7 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
         maxLatency:   maxLatency,
         avgLatency:   avgLatency,
         p95Latency:   p95Latency,
+		p99Latency:   p99Latency,
         latencies:    latencies,
     }
 
