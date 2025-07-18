@@ -258,11 +258,11 @@ func main() {
 
             // Use pre-generated data instead of generating on-the-fly
             testrecord := testRecords[recordIndex]
-
+			writeStartTime := time.Now()
 			//testrecord := generateRandomData(*clusterKey1Len, *data1Len, logger) // Generate data for next write
 			//logger.Info("003-calling insert")
 			resultFailed := insertQuery(session, ctx, testrecord.PartitionKey1, testrecord.ClusterKey1, testrecord.Data1, testrecord.Data2, *speculativeRetry, *srNumAttempts, *srTimeoutDelay, qryIdempotentBool, logger)
-	
+			writeDuration := time.Since(writeStartTime)
 			//logger.Info("004-returned from insert call")
 			//logger.Info("005- before progress check from insert call")
 			if resultFailed {
