@@ -163,7 +163,6 @@ func main() {
 	clusterKey1Len := flag.Int("clusterKey1Len", 25,"Length of random data in clustering key")
 	data1Len := flag.Int("data1Len", 50000,"Length of random data in data1 field")
 	progressInterval := flag.Int64("progressInterval", 10000,"Number of records between status interval")
-	maxErr := flag.Int64("maxErr", 1000,"Maximum Errors before quitting")
 	totalReads := flag.Int64("totalReads", 1, "Total reads to perform.  Default 100000")
 	readConcurrency := flag.Int("readConcurrency", 100, "Number of concurrent reads to perform during read test")
     flag.Parse()
