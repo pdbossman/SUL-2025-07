@@ -139,8 +139,6 @@ func preGenerateTestData(totalRecords int, clusterKey1Len int, data1Len int, log
     
     // Wait for all workers to complete
     wg.Wait()
-    // Wait for all workers to complete
-    wg.Wait()
     
     duration := time.Since(startTime)
     recordsPerSecond := float64(totalRecords) / duration.Seconds()
