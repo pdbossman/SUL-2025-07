@@ -139,7 +139,7 @@ func preGenerateTestData(totalRecords int, clusterKey1Len int, data1Len int, log
     
     // Wait for all workers to complete
     wg.Wait()
-    
+
     duration := time.Since(startTime)
     recordsPerSecond := float64(totalRecords) / duration.Seconds()
     
@@ -148,6 +148,17 @@ func preGenerateTestData(totalRecords int, clusterKey1Len int, data1Len int, log
     return records
 }
 
+type WriteTestResults struct {
+    totalWrites  int
+    successWrites int
+    failedWrites  int
+    minLatency   time.Duration
+    maxLatency   time.Duration
+    avgLatency   time.Duration
+    p95Latency   time.Duration
+    p99Latency   time.Duration
+    latencies    []time.Duration
+}
 
 func main() {
     // Define flags
@@ -209,6 +220,15 @@ func main() {
 	var currentErrorCnt int64 = 0
 	var currentSuccessCnt int64 = 0
 	var currentRowAttempt int64 = 0
+	// Add these for write latency tracking
+	writeLatencies := make([]time.Duration, 0, *totalWrites)
+	var writeLatencyMutex sync.Mutex
+	var writeMinLatency time.Duration
+	var writeMaxLatency time.Duration
+	var writeMinLatencyMutex sync.Mutex
+	var writeMaxLatencyMutex sync.Mutex
+	var writeTotalLatency time.Duration
+	var writeTotalLatencyMutex sync.Mutex
 
     // PRE-GENERATE ALL TEST DATA
     testRecords := preGenerateTestData(*totalWrites, *clusterKey1Len, *data1Len, logger)
@@ -250,6 +270,27 @@ func main() {
 			} else {
 				atomic.AddInt64(&successCnt, 1)
 			}
+			// Track latency for successful writes only
+			writeMinLatencyMutex.Lock()
+			if writeMinLatency == 0 || writeDuration < writeMinLatency {
+				writeMinLatency = writeDuration
+			}
+			writeMinLatencyMutex.Unlock()
+			
+			writeMaxLatencyMutex.Lock()
+			if writeDuration > writeMaxLatency {
+				writeMaxLatency = writeDuration
+			}
+			writeMaxLatencyMutex.Unlock()
+			
+			writeTotalLatencyMutex.Lock()
+			writeTotalLatency += writeDuration
+			writeTotalLatencyMutex.Unlock()
+			
+			writeLatencyMutex.Lock()
+			writeLatencies = append(writeLatencies, writeDuration)
+			writeLatencyMutex.Unlock()
+
 			// Log progress inside goroutine
 			if currentRowAttempt%*progressInterval == 0 {
 				currentErrorCnt := atomic.LoadInt64(&errorCnt)
@@ -261,10 +302,26 @@ func main() {
 	}
 
 	wg.Wait()
+
 	currentErrorCnt = atomic.LoadInt64(&errorCnt)
 	currentSuccessCnt = atomic.LoadInt64(&successCnt)
 	currentRowAttempt = atomic.LoadInt64(&rowAttempt)
 	logger.Info(fmt.Sprintf("WRITES COMPLETED!  Attempted %d rows, Success: %d, Failures: %d, Start Time: %s", currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
+	currentErrorCnt = atomic.LoadInt64(&errorCnt)
+	currentSuccessCnt = atomic.LoadInt64(&successCnt)
+	currentRowAttempt = atomic.LoadInt64(&rowAttempt)
+
+	// Calculate write latencies
+	writeTestResults := calculateWriteLatencies(writeLatencies, currentSuccessCnt, writeTotalLatency, writeMinLatency, writeMaxLatency)
+
+	logger.Info(fmt.Sprintf("WRITES COMPLETED! Attempted %d rows, Success: %d, Failures: %d, Start Time: %s", currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
+
+	// Log write latency results
+	logger.Info(fmt.Sprintf("Write latency - Min: %v, Avg: %v, Max: %v, p95: %v, p99: %v", 
+		writeTestResults.minLatency, writeTestResults.avgLatency, 
+		writeTestResults.maxLatency, writeTestResults.p95Latency, 
+		writeTestResults.p99Latency))
+
 	time.Sleep(5 * time.Second)
 
 	if len(testRecords) > 0 && *totalReads > 0 {
@@ -298,10 +355,12 @@ func main() {
 		logger.Info(fmt.Sprintf("READ TEST COMPLETED IN %v! Total: %d, Success: %d, Failures: %d, Reads/sec: %.2f", 
 			readDuration, readTestResults.totalReads, readTestResults.successReads, 
 			readTestResults.failedReads, readsPerSecond))
-		
-		logger.Info(fmt.Sprintf("Read latency - Min: %v, Avg: %v, Max: %v, p95: %v", 
+
+		logger.Info(fmt.Sprintf("Read latency - Min: %v, Avg: %v, Max: %v, p95: %v, p99: %v", 
 			readTestResults.minLatency, readTestResults.avgLatency, 
-			readTestResults.maxLatency, readTestResults.p95Latency))
+			readTestResults.maxLatency, readTestResults.p95Latency, 
+			readTestResults.p99Latency))
+		
 	}
 }
 
@@ -598,6 +657,53 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
     }
 
     return results
+}
+
+func calculateWriteLatencies(writeLatencies []time.Duration, successCount int64, totalLatency time.Duration, minLatency time.Duration, maxLatency time.Duration) WriteTestResults {
+    // Calculate average latency
+    var avgLatency time.Duration
+    if successCount > 0 {
+        avgLatency = totalLatency / time.Duration(successCount)
+    }
+
+    // Calculate percentile latencies
+    var p95Latency time.Duration
+    var p99Latency time.Duration
+
+    if len(writeLatencies) > 0 {
+        // Sort latencies for percentile calculations
+        sort.Slice(writeLatencies, func(i, j int) bool {
+            return writeLatencies[i] < writeLatencies[j]
+        })
+
+        // Calculate p95 latency
+        idx95 := int(float64(len(writeLatencies)) * 0.95)
+        if idx95 < len(writeLatencies) {
+            p95Latency = writeLatencies[idx95]
+        } else {
+            p95Latency = writeLatencies[len(writeLatencies)-1]
+        }
+
+        // Calculate p99 latency
+        idx99 := int(float64(len(writeLatencies)) * 0.99)
+        if idx99 < len(writeLatencies) {
+            p99Latency = writeLatencies[idx99]
+        } else {
+            p99Latency = writeLatencies[len(writeLatencies)-1]
+        }
+    }
+
+    return WriteTestResults{
+        totalWrites:   int(successCount),
+        successWrites: int(successCount),
+        failedWrites:  0, // We only track latencies for successful writes
+        minLatency:    minLatency,
+        maxLatency:    maxLatency,
+        avgLatency:    avgLatency,
+        p95Latency:    p95Latency,
+        p99Latency:    p99Latency,
+        latencies:     writeLatencies,
+    }
 }
 
 func getSystemConfig(session *gocql.Session, logger *zap.Logger) {
