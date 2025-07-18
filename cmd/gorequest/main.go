@@ -161,7 +161,7 @@ func main() {
 	srTimeoutDelay := flag.Int("srTimeoutDelay", 60,"Number of milliseconds between speculative retry attempts")
 	qryIdempotent := flag.Int("qryIdempotent", 0,"Write idempotent flag")
 	clusterKey1Len := flag.Int("clusterKey1Len", 25,"Length of random data in clustering key")
-	data1Len := flag.Int("data1Len", 50000,"Length of random data in data1 field")
+	data1Len := flag.Int("data1Len", 500,"Length of random data in data1 field")
 	progressInterval := flag.Int64("progressInterval", 10000,"Number of records between status interval")
 	totalReads := flag.Int64("totalReads", 1, "Total reads to perform.  Default 100000")
 	readConcurrency := flag.Int("readConcurrency", 100, "Number of concurrent reads to perform during read test")
