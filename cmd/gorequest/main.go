@@ -287,11 +287,11 @@ func main() {
 			writeLatencyMutex.Unlock()
 
 			// Log progress inside goroutine
+			currentErrorCnt := atomic.LoadInt64(&errorCnt)
+			currentSuccessCnt := atomic.LoadInt64(&successCnt)
 			currentRowAttempt = currentSuccessCnt + currentErrorCnt
 			//currentRowAttempt = atomic.LoadInt64(&rowAttempt)
 			if currentRowAttempt%*progressInterval == 0 {
-				currentErrorCnt := atomic.LoadInt64(&errorCnt)
-				currentSuccessCnt := atomic.LoadInt64(&successCnt)
 				logger.Info(fmt.Sprintf("Write progress %d rows, Success: %d, Failures: %d, Start Time: %s", 
 					currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
 			}
