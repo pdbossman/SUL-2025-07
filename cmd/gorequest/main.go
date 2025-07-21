@@ -184,7 +184,6 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(*totalWrites)
 
-	startTime := time.Now()
 	logger := log.CreateLogger("debug")
 	qryIdempotentBool := false
 	if *qryIdempotent != 0 {
@@ -235,7 +234,7 @@ func main() {
     logger.Info("All test data pre-generated, starting insert phase...")
 
 	logger.Info("001-Start of for loop")
-
+	startTime := time.Now()
 	for i := 0; i < *totalWrites; i++ {
 		//logger.Info("002-Inside for loop")
 
@@ -510,6 +509,7 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
         totalReads, concurrency, len(testRecords)))
 
     // Launch all read operations
+	startTime := time.Now()
     for i := int64(0); i < totalReads; i++ {
         // Acquire semaphore slot before read
         sem <- struct{}{}
@@ -521,10 +521,10 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
         if currentReadsAttempted%int64(concurrency*10) == 0 || currentReadsAttempted == totalReads {
             currentSuccessCnt := atomic.LoadInt64(&successCnt)
             currentErrorCnt := atomic.LoadInt64(&errorCnt)
-            logger.Info(fmt.Sprintf("Read progress: %d/%d (%.1f%%), Success: %d, Failures: %d", 
+            logger.Info(fmt.Sprintf("Read progress: %d/%d (%.1f%%), Success: %d, Failures: %d , Start Time: %s", 
                 currentReadsAttempted, totalReads, 
                 float64(currentReadsAttempted)/float64(totalReads)*100,
-                currentSuccessCnt, currentErrorCnt))
+                currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
         }
 
         go func() {
@@ -536,8 +536,6 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
             // Randomly select a record from the pre-generated test data
             recordIndex := rand.Intn(len(testRecords))
             testRecord := testRecords[recordIndex]
-            
-            startTime := time.Now()
             
             // Prepare the query using the randomly selected test record
             q := session.Query("SELECT partitionkey1, clusterkey1, data1, data2 FROM tbtest1 WHERE partitionkey1 = ? AND clusterkey1 = ?",
