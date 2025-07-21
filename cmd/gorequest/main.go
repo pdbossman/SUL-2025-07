@@ -240,10 +240,6 @@ func main() {
 
 		// Acquire semaphore slot before insert
 		sem <- struct{}{}
-		atomic.AddInt64(&rowAttempt, 1)
-		currentErrorCnt = atomic.LoadInt64(&errorCnt)
-		currentSuccessCnt = atomic.LoadInt64(&successCnt)
-		currentRowAttempt = atomic.LoadInt64(&rowAttempt)
 
 		go func(recordIndex int) {
 			defer wg.Done()
@@ -258,8 +254,8 @@ func main() {
 			//logger.Info("003-calling insert")
 			resultFailed := insertQuery(session, ctx, testrecord.PartitionKey1, testrecord.ClusterKey1, testrecord.Data1, testrecord.Data2, *speculativeRetry, *srNumAttempts, *srTimeoutDelay, qryIdempotentBool, logger)
 			writeDuration := time.Since(writeStartTime)
-			//logger.Info("004-returned from insert call")
-			//logger.Info("005- before progress check from insert call")
+			atomic.AddInt64(&rowAttempt, 1)
+
 			if resultFailed {
 				atomic.AddInt64(&errorCnt, 1)
 			} else {
