@@ -246,7 +246,7 @@ func main() {
 		currentRowAttempt = atomic.LoadInt64(&rowAttempt)
 
 		if currentRowAttempt%*progressInterval == 0 {
-			logger.Info(fmt.Sprintf("Attempted %d rows, Success: %d, Failures: %d, Start Time: %s", currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
+			logger.Info(fmt.Sprintf("Write Progress %d rows, Success: %d, Failures: %d, Start Time: %s", currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
 		}
 
 		go func(recordIndex int) {
