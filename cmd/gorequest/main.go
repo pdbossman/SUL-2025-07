@@ -287,7 +287,8 @@ func main() {
 			writeLatencyMutex.Unlock()
 
 			// Log progress inside goroutine
-			currentRowAttempt = atomic.LoadInt64(&rowAttempt)
+			currentRowAttempt = currentSuccessCnt + currentErrorCnt
+			//currentRowAttempt = atomic.LoadInt64(&rowAttempt)
 			if currentRowAttempt%*progressInterval == 0 {
 				currentErrorCnt := atomic.LoadInt64(&errorCnt)
 				currentSuccessCnt := atomic.LoadInt64(&successCnt)
@@ -301,7 +302,8 @@ func main() {
 
 	currentErrorCnt = atomic.LoadInt64(&errorCnt)
 	currentSuccessCnt = atomic.LoadInt64(&successCnt)
-	currentRowAttempt = atomic.LoadInt64(&rowAttempt)
+	//currentRowAttempt = atomic.LoadInt64(&rowAttempt)
+	currentRowAttempt = currentSuccessCnt + currentErrorCnt
 
 	// Calculate write latencies
 	writeTestResults := calculateWriteLatencies(writeLatencies, currentSuccessCnt, writeTotalLatency, writeMinLatency, writeMaxLatency)
