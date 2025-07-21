@@ -245,10 +245,6 @@ func main() {
 		currentSuccessCnt = atomic.LoadInt64(&successCnt)
 		currentRowAttempt = atomic.LoadInt64(&rowAttempt)
 
-		if currentRowAttempt%*progressInterval == 0 {
-			logger.Info(fmt.Sprintf("Write Progress %d rows, Success: %d, Failures: %d, Start Time: %s", currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
-		}
-
 		go func(recordIndex int) {
 			defer wg.Done()
 			defer func() {
@@ -294,7 +290,7 @@ func main() {
 			if currentRowAttempt%*progressInterval == 0 {
 				currentErrorCnt := atomic.LoadInt64(&errorCnt)
 				currentSuccessCnt := atomic.LoadInt64(&successCnt)
-				logger.Info(fmt.Sprintf("Attempted %d rows, Success: %d, Failures: %d, Start Time: %s", 
+				logger.Info(fmt.Sprintf("Write progress %d rows, Success: %d, Failures: %d, Start Time: %s", 
 					currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
 			}
 		}(i)
