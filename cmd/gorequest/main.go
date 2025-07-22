@@ -235,6 +235,8 @@ func main() {
 
 	logger.Info("001-Start of for loop")
 	startTime := time.Now()
+	writeJobStartTime := time.Now()
+
 	for i := 0; i < *totalWrites; i++ {
 		//logger.Info("002-Inside for loop")
 
@@ -249,9 +251,10 @@ func main() {
 
             // Use pre-generated data instead of generating on-the-fly
             testrecord := testRecords[recordIndex]
-			writeStartTime := time.Now()
+			
 			//testrecord := generateRandomData(*clusterKey1Len, *data1Len, logger) // Generate data for next write
 			//logger.Info("003-calling insert")
+			writeStartTime := time.Now()
 			resultFailed := insertQuery(session, ctx, testrecord.PartitionKey1, testrecord.ClusterKey1, testrecord.Data1, testrecord.Data2, *speculativeRetry, *srNumAttempts, *srTimeoutDelay, qryIdempotentBool, logger)
 			writeDuration := time.Since(writeStartTime)
 			atomic.AddInt64(&rowAttempt, 1)
@@ -300,15 +303,22 @@ func main() {
 	currentSuccessCnt = atomic.LoadInt64(&successCnt)
 	//currentRowAttempt = atomic.LoadInt64(&rowAttempt)
 	currentRowAttempt = currentSuccessCnt + currentErrorCnt
+	writeJobDuration := time.Since(writeJobStartTime)
+    writesPerSecond := float64(0)
 
+	// Calculate writes per second
+	if writeJobDuration > 0 {
+			writesPerSecond = float64(currentSuccessCnt) / writeJobDuration.Seconds()
+		}
 	// Calculate write latencies
 	writeTestResults := calculateWriteLatencies(writeLatencies, currentSuccessCnt, writeTotalLatency, writeMinLatency, writeMaxLatency)
-
-	logger.Info(fmt.Sprintf("WRITES COMPLETED! Attempted %d rows, Success: %d, Failures: %d, Start Time: %s", currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
+    
+	logger.Info(fmt.Sprintf("WRITE TEST COMPLETED IN %v! Total %d, Success: %d, Failures: %d, Writes/sec: %.2f",
+        writeJobDuration, currentRowAttempt, currentSuccessCnt, currentErrorCnt, writesPerSecond))
 
 	// Log write latency results
 	logger.Info(fmt.Sprintf("Write latency - Min: %v, Avg: %v, Max: %v, p95: %v, p99: %v", 
-		writeTestResults.minLatency, writeTestResults.avgLatency, 
+        writeTestResults.minLatency, writeTestResults.avgLatency, 
 		writeTestResults.maxLatency, writeTestResults.p95Latency, 
 		writeTestResults.p99Latency))
 
