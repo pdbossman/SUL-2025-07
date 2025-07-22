@@ -129,11 +129,11 @@ func preGenerateTestData(totalRecords int, clusterKey1Len int, data1Len int, log
                 
                 // Optional: Log progress per worker (less frequent to avoid log spam)
                 if (i-start+1)%5000 == 0 {
-                    logger.Info(fmt.Sprintf("Worker progress %d: Generated %d/%d records", workerID, i-start+1, end-start))
+                    logger.Info(fmt.Sprintf("INFO Datagen progress - Worker %d: Generated %d/%d records", workerID, i-start+1, end-start))
                 }
             }
             
-            logger.Info(fmt.Sprintf("Worker %d completed: generated %d records (indices %d-%d)", workerID, end-start, start, end-1))
+            logger.Info(fmt.Sprintf("INFO Datagen - Worker %d completed: generated %d records (indices %d-%d)", workerID, end-start, start, end-1))
         }(workerID, startIdx, endIdx)
     }
     
@@ -143,7 +143,7 @@ func preGenerateTestData(totalRecords int, clusterKey1Len int, data1Len int, log
     duration := time.Since(startTime)
     recordsPerSecond := float64(totalRecords) / duration.Seconds()
     
-    logger.Info(fmt.Sprintf("Parallel pre-generation complete: %d records ready in %v (%.2f records/sec)", 
+    logger.Info(fmt.Sprintf("INFO Datagen - pre-generation complete: %d records ready in %v (%.2f records/sec)", 
         totalRecords, duration, recordsPerSecond))
     return records
 }
