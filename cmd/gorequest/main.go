@@ -129,7 +129,7 @@ func preGenerateTestData(totalRecords int, clusterKey1Len int, data1Len int, log
                 
                 // Optional: Log progress per worker (less frequent to avoid log spam)
                 if (i-start+1)%5000 == 0 {
-                    logger.Info(fmt.Sprintf("Worker %d: Generated %d/%d records", workerID, i-start+1, end-start))
+                    logger.Info(fmt.Sprintf("Worker progress %d: Generated %d/%d records", workerID, i-start+1, end-start))
                 }
             }
             
