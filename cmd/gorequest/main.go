@@ -531,7 +531,8 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
 
         // Log progress periodically
         currentReadsAttempted := atomic.LoadInt64(&readsAttempted)
-        if currentReadsAttempted%int64(concurrency*10) == 0 || currentReadsAttempted == totalReads {
+        if currentRowAttempt%*int64(progressInterval) == 0 || currentReadsAttempted == totalReads {}
+        //if currentReadsAttempted%int64(concurrency*10) == 0 || currentReadsAttempted == totalReads {
             currentSuccessCnt := atomic.LoadInt64(&successCnt)
             currentErrorCnt := atomic.LoadInt64(&errorCnt)
             logger.Info(fmt.Sprintf("Read progress: %d/%d (%.1f%%), Success: %d, Failures: %d , Start Time: %s", 
