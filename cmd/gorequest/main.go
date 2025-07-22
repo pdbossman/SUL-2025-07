@@ -330,7 +330,7 @@ func main() {
 			*totalReads, len(testRecords)))
 
 		readStartTime := time.Now()
-		readTestResults := runReadTest(session, testRecords, *totalReads, *readConcurrency, *speculativeRetry, *srNumAttempts, *srTimeoutDelay, qryIdempotentBool, logger)
+		readTestResults := runReadTest(session, testRecords, *totalReads, *readConcurrency, *speculativeRetry, *srNumAttempts, *srTimeoutDelay, qryIdempotentBool, *progressInterval, logger)
 		readDuration := time.Since(readStartTime)
 
 		// Calculate reads per second
@@ -485,7 +485,7 @@ type ReadTestResults struct {
 }
 
 func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads int64, concurrency int, 
-        speculativeRetry int, srNumAttempts int, srTimeoutDelay int, qryIdempotent bool, 
+        speculativeRetry int, srNumAttempts int, srTimeoutDelay int, qryIdempotent bool, progressInterval int64, 
         logger *zap.Logger) ReadTestResults {
     if len(testRecords) == 0 {
         logger.Warn("No test records available for read testing, skipping read test")
@@ -531,7 +531,7 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
 
         // Log progress periodically
         currentReadsAttempted := atomic.LoadInt64(&readsAttempted)
-        if currentRowAttempt%*int64(progressInterval) == 0 || currentReadsAttempted == totalReads {}
+        if currentReadsAttempted%progressInterval == 0 || currentReadsAttempted == totalReads {
         //if currentReadsAttempted%int64(concurrency*10) == 0 || currentReadsAttempted == totalReads {
             currentSuccessCnt := atomic.LoadInt64(&successCnt)
             currentErrorCnt := atomic.LoadInt64(&errorCnt)
