@@ -291,8 +291,8 @@ func main() {
 			currentRowAttempt = currentSuccessCnt + currentErrorCnt
 			//currentRowAttempt = atomic.LoadInt64(&rowAttempt)
 			if currentRowAttempt%*progressInterval == 0 {
-				logger.Info(fmt.Sprintf("Write progress %d rows, Success: %d, Failures: %d, Start Time: %s", 
-					currentRowAttempt, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
+				logger.Info(fmt.Sprintf("Write progress %d rows/%d, Success: %d, Failures: %d, Start Time: %s", 
+					currentRowAttempt, totalWrites, currentSuccessCnt, currentErrorCnt, startTime.Format(time.RFC3339Nano)))
 			}
 		}(i)
 	}
