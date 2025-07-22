@@ -312,7 +312,7 @@ func main() {
 		}
 	// Calculate write latencies
 	writeTestResults := calculateWriteLatencies(writeLatencies, currentSuccessCnt, writeTotalLatency, writeMinLatency, writeMaxLatency)
-    
+
 	logger.Info(fmt.Sprintf("WRITE TEST COMPLETED IN %v! Total %d, Success: %d, Failures: %d, Writes/sec: %.2f",
         writeJobDuration, currentRowAttempt, currentSuccessCnt, currentErrorCnt, writesPerSecond))
 
@@ -322,7 +322,7 @@ func main() {
 		writeTestResults.maxLatency, writeTestResults.p95Latency, 
 		writeTestResults.p99Latency))
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	if len(testRecords) > 0 && *totalReads > 0 {
 		// Run read test with pre-generated test records
