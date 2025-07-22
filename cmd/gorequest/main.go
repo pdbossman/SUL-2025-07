@@ -569,6 +569,7 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
             
             // Execute the query
             var partitionkey1, clusterkey1, data1, data2 string
+            qryStartTime := := time.Now()
             if err := q.Scan(&partitionkey1, &clusterkey1, &data1, &data2); err != nil {
                 logger.Error("Read query failed",
                     zap.String("partitionkey1", testRecord.PartitionKey1),
@@ -577,7 +578,7 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
                 atomic.AddInt64(&errorCnt, 1)
             } else {
                 // Calculate and record latency
-                duration := time.Since(startTime)
+                duration := time.Since(qryStartTime)
                 
                 // Update min/max latency
                 minLatencyMutex.Lock()
