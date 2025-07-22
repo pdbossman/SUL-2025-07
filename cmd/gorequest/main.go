@@ -569,7 +569,7 @@ func runReadTest(session *gocql.Session, testRecords []TestRecord, totalReads in
             
             // Execute the query
             var partitionkey1, clusterkey1, data1, data2 string
-            qryStartTime := := time.Now()
+            qryStartTime := time.Now()
             if err := q.Scan(&partitionkey1, &clusterkey1, &data1, &data2); err != nil {
                 logger.Error("Read query failed",
                     zap.String("partitionkey1", testRecord.PartitionKey1),
