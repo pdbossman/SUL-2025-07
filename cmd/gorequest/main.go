@@ -362,6 +362,14 @@ func main() {
 			readTestResults.p99Latency))
 		
 	}
+	logger.Info(fmt.Sprintf("WRITE TEST COMPLETED IN %v! Total %d, Success: %d, Failures: %d, Writes/sec: %.2f",
+        writeJobDuration, currentRowAttempt, currentSuccessCnt, currentErrorCnt, writesPerSecond))
+
+	// Log write latency results
+	logger.Info(fmt.Sprintf("Write latency - Min: %v, Avg: %v, Max: %v, p95: %v, p99: %v", 
+        writeTestResults.minLatency, writeTestResults.avgLatency, 
+		writeTestResults.maxLatency, writeTestResults.p95Latency, 
+		writeTestResults.p99Latency))
 }
 
 func insertQuery(session *gocql.Session, ctx context.Context, partitionkey1 string, clusterkey1 string, data1 string, data2 string, speculativeRetry int, srNumAttempts int, srTimeoutDelay int, qryIdempotent bool, logger *zap.Logger) bool {
