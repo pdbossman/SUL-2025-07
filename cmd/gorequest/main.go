@@ -217,7 +217,7 @@ func insertQuery(session *gocql.Session, ctx context.Context, partitionkey1 stri
 	//	sp := &gocql.SimpleSpeculativeExecution{NumAttempts: srNumAttempts, TimeoutDelay: time.Duration(srTimeoutDelay) * time.Millisecond}
 	//	query.SetSpeculativeExecutionPolicy(sp)
 	//}
-	//query.Idempotent(qryIdempotent)
+	query.Idempotent(qryIdempotent)
 
 	if err := query.Exec(); err != nil {
 		logger.Error("insert tbtest1 "+partitionkey1+" "+clusterkey1, zap.Error(err))
