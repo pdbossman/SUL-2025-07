@@ -553,25 +553,6 @@ func main() {
 
     sem := make(chan struct{}, *writeConcurrency) // Define semaphore with writeConcurrency limit
 
-	
-	cluster := scylla.CreateCluster(*configFile)
-	cluster.Authenticator = gocql.PasswordAuthenticator{
-		Username: *username,
-		Password: *password}
-
-	session, err := gocql.NewSession(*cluster)
-	if err != nil {
-		logger.Fatal("unable to connect to scylla", zap.Error(err))
-	}
-	defer session.Close()
-	ctx := context.Background()
-
-    // Read the JSON configuration file
-    data, err := ioutil.ReadFile(*configFile)
-    if err != nil {
-        logger.Fatal("Unable to read config file", zap.Error(err))
-    }	
-
 	goRoutines := runtime.GOMAXPROCS(runtime.NumCPU())
 
 	var errorCnt int64 = 0
@@ -593,6 +574,25 @@ func main() {
     // PRE-GENERATE ALL TEST DATA
     testRecords := preGenerateTestData(*totalWrites, *clusterKey1Len, *data1Len, logger)
     logger.Info("All test data pre-generated, starting insert phase...")
+
+    logger.Info("Connect to ScyllaDB...")
+	cluster := scylla.CreateCluster(*configFile)
+	cluster.Authenticator = gocql.PasswordAuthenticator{
+		Username: *username,
+		Password: *password}
+
+	session, err := gocql.NewSession(*cluster)
+	if err != nil {
+		logger.Fatal("unable to connect to scylla", zap.Error(err))
+	}
+	defer session.Close()
+	ctx := context.Background()
+
+    // Read the JSON configuration file
+    data, err := ioutil.ReadFile(*configFile)
+    if err != nil {
+        logger.Fatal("Unable to read config file", zap.Error(err))
+    }	
 
 	logger.Info("001-Start of for loop")
 	startTime := time.Now()

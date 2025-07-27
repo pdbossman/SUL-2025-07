@@ -158,6 +158,11 @@ nohup ../build/gorequest \
 
 This example runs the application in the background, writing results to `test2.log`, with 1 million writes at 100 concurrent transactions and 100,000 reads at 100 concurrent operations.
 
+The code is compiled with debug to give greater visibility into driver state during execution.
+
+cat test2.log | grep -i info
+
+
 ## Monitoring and Analysis
 
 Monitor your ScyllaDB cluster during testing to observe the impact of different configurations and identify optimization opportunities. Pay attention to metrics like latency, throughput, error rates, and resource utilization to understand how various settings affect performance under stress conditions.
