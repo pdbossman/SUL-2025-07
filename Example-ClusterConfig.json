@@ -1,0 +1,29 @@
+{
+    "Consistency" : "LOCAL_QUORUM",
+	"Keyspace": "kstest1",
+	"LocalDC": "MY-DATACENTER-HERE",
+    "Rack": "",
+    "Hosts": "node0,node1,node2",
+    "ConnectTimeout": 10000,
+    "ReconnectInterval": 100,
+    "MaxRequestsPerConn": 128,
+    "Port": 9042,
+    "Timeout": 100,
+    "WriteTimeout": 50,
+    "UseReconnectionPolicy": true,
+    "UseRetryPolicy": true,
+    "DisableInitialHostLookup": false,
+    "ConnectionRetryPolicy":{
+        "PolicyName": "ExponentialReconnectionPolicy",
+        "MaxRetries": 100,
+        "InitialInterval":  100,
+        "MaxInterval": 200
+    },
+    "RequestRetryPolicy":
+    {
+        "PolicyName": "ExponentialBackoffRetryPolicy",
+        "Min":  20,
+        "Max":  100,
+        "NumRetries": 5
+    }
+}

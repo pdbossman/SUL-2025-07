@@ -1,0 +1,75 @@
+# Install go in ubuntu
+wget -c https://go.dev/dl/go1.24.4.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.24.4.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+
+# set PATH so it includes /usr/local/go/bin if it exists
+vim ~/.bashrc
+
+Add:
+if [ -d "/usr/local/go/bin" ] ; then
+    PATH="/usr/local/go/bin:$PATH"
+fi
+# Add GOPATH to PATH if it exists
+if [ -d "$HOME/go/bin" ] ; then
+    PATH="$HOME/go/bin:$PATH"
+fi
+
+source .bashrc
+go version
+
+# after setting up keys to get to git repo...
+git clone git@github.com:pdbossman/SUL-2025-07.git
+
+# updated go.mod version of go to what's installed.
+cd ~/SUL-2025-07
+mkdir ~/build
+go mod tidy
+go build -a -tags "gocql_debug" -o ../build/gorequest ./cmd/gorequest
+
+export PASSWORD=YOUR_PASSWORD_HERE
+export UNAME=app1_user1
+
+cp Example-ClusterConfig.json ClusterConfig.json
+
+# edit datacenter, contact points, any other changes
+vim ClusterConfig.json
+
+../build/gorequest --help
+Usage of ../build/gorequest:
+  -clusterKey1Len int
+    	Length of random data in clustering key (default 25)
+  -config string
+    	config file name (default " ClusterConfig.json")
+  -data1Len int
+    	Length of random data in data1 field (default 500)
+  -password string
+    	database password (default " ")
+  -progressInterval int
+    	Number of records between status interval (default 10000)
+  -qryIdempotent int
+    	Write idempotent flag
+  -readConcurrency int
+    	Number of concurrent reads to perform during read test (default 100)
+  -speculativeRetry int
+    	0 for off, 1 for on.  Default is 0.
+  -srNumAttempts int
+    	Number of speculative retry attempts
+  -srTimeoutDelay int
+    	Number of milliseconds between speculative retry attempts (default 60)
+  -totalReads int
+    	Total reads to perform.  Default 100000 (default 1)
+  -totalWrites int
+    	Total writes to perform.  Default 100000 (default 100000)
+  -username string
+    	database username (default "app1_user1")
+  -writeConcurrency int
+    	Maximum concurrent transactions.  Default 50. (default 50)
+
+Example execution:
+nohup ../build/gorequest -username $UNAME -password $PASSWORD -totalWrites 1000000 -writeConcurrency 100 \
+--totalReads 100000 --readConcurrency 100  --speculativeRetry 0 --clusterKey1Len 25 \
+--config ClusterConfig.json -progressInterval 1000 \
+ > test2.log 2>&1 &
+
+
