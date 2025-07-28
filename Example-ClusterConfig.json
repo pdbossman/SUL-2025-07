@@ -19,11 +19,16 @@
         "InitialInterval":  100,
         "MaxInterval": 200
     },
-    "RequestRetryPolicy":
+    "RequestExponentialBackoffRetryPolicy":
     {
         "PolicyName": "ExponentialBackoffRetryPolicy",
         "Min":  20,
         "Max":  100,
         "NumRetries": 5
-    }
+    },
+    "RequestSimpleRetryPolicy":    
+    {
+        "PolicyName": "SimpleRetryPolicy",
+        "NumRetries": 0
+    } 
 }
