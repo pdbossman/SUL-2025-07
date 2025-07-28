@@ -32,12 +32,12 @@ type ClusterConfig struct {
         InitialInterval int `json:"InitialInterval"`
         MaxInterval     int `json:"MaxInterval"`
     } `json:"ConnectionRetryPolicy"`
-    RequestExponentialRetryPolicy struct {
+    RequestExponentialBackoffRetryPolicy struct {
         PolicyName     string `json:"PolicyName"`
         Min            int `json:"Min"`
         Max            int `json:"Max"`
         NumRetries     int `json:"NumRetries"`
-    } `json:"RequestExponentialRetryPolicy"`
+    } `json:"RequestExponentialBackoffRetryPolicy"`
 	    RequestSimpleRetryPolicy struct {
         PolicyName     string `json:"PolicyName"`
         NumRetries     int `json:"NumRetries"`
@@ -72,9 +72,9 @@ func CreateCluster(configFile string) *gocql.ClusterConfig {
 		MaxInterval:     time.Duration(clusterConfig.ConnectionRetryPolicy.MaxInterval) * time.Millisecond,
 	}
     requestRetryPolicy := &gocql.ExponentialBackoffRetryPolicy{
-		Min:	time.Duration(clusterConfig.RequestExponentialRetryPolicy.Min) * time.Millisecond,  
-        Max:	time.Duration(clusterConfig.RequestExponentialRetryPolicy.Max) * time.Millisecond,
-        NumRetries: clusterConfig.RequestExponentialRetryPolicy.NumRetries,
+		Min:	time.Duration(clusterConfig.RequestExponentialBackoffRetryPolicy.Min) * time.Millisecond,  
+        Max:	time.Duration(clusterConfig.RequestExponentialBackoffRetryPolicy.Max) * time.Millisecond,
+        NumRetries: clusterConfig.RequestExponentialBackoffRetryPolicy.NumRetries,
     }
     requestSimpleRetryPolicy := &gocql.SimpleRetryPolicy{
         NumRetries: clusterConfig.RequestSimpleRetryPolicy.NumRetries,
